@@ -1,11 +1,14 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Home() {
   const [chats, setChats] = useState([]);
   const [current, setCurrent] = useState(null);
   const [input, setInput] = useState("");
   const [tier, setTier] = useState("free");
+  const [loading, setLoading] = useState(false);
+
+  const chatRef = useRef(null);
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("chats") || "[]");
@@ -19,6 +22,10 @@ export default function Home() {
       setCurrent(saved[0]);
     }
   }, []);
+
+  useEffect(() => {
+    chatRef.current?.scrollTo(0, chatRef.current.scrollHeight);
+  }, [current]);
 
   function save(data) {
     setChats(data);
@@ -47,41 +54,51 @@ export default function Home() {
   }
 
   async function send() {
-    if (!input || !current) return;
+    if (!input || !current || loading) return;
+
+    const message = input;
+    setInput("");
+    setLoading(true);
 
     const updatedChat = {
       ...current,
-      messages: [...current.messages, { text: input, user: true }]
+      messages: [...current.messages, { text: message, user: true }]
     };
 
     updateCurrent(updatedChat);
-    const message = input;
-    setInput("");
 
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        message,
-        tier,
-        sessionId: current.id
-      })
-    });
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message,
+          tier,
+          sessionId: current.id
+        })
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    const finalChat = {
-      ...updatedChat,
-      messages: [...updatedChat.messages, { text: data.reply, user: false }]
-    };
+      const finalChat = {
+        ...updatedChat,
+        messages: [
+          ...updatedChat.messages,
+          { text: data.reply, user: false }
+        ]
+      };
 
-    if (finalChat.title === "New Chat") {
-      finalChat.title = message.slice(0, 25);
+      if (finalChat.title === "New Chat") {
+        finalChat.title = message.slice(0, 25);
+      }
+
+      updateCurrent(finalChat);
+
+    } catch {
+      alert("Error connecting");
     }
 
-    updateCurrent(finalChat);
+    setLoading(false);
   }
 
   function formatText(text) {
@@ -97,7 +114,7 @@ export default function Home() {
           html += "<ul style='margin:10px 0; padding-left:20px;'>";
           inList = true;
         }
-        html += "<li style='margin-bottom:6px;'>" + line.slice(2) + "</li>";
+        html += "<li>" + line.slice(2) + "</li>";
       } else {
         if (inList) {
           html += "</ul>";
@@ -114,7 +131,7 @@ export default function Home() {
   }
 
   return (
-    <div style={{ display: "flex", height: "100vh", background: "#0f172a" }}>
+    <div style={{ display: "flex", height: "100vh", background: "#0f172a", color: "white" }}>
 
       {/* SIDEBAR */}
       <div style={{
@@ -155,13 +172,13 @@ export default function Home() {
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
 
         {/* CHAT */}
-        <div style={{
+        <div ref={chatRef} style={{
           flex: 1,
           overflowY: "auto",
           padding: 30,
           display: "flex",
           flexDirection: "column",
-          gap: 15
+          gap: 20
         }}>
           {current?.messages.map((m, i) => (
             <div key={i}
@@ -174,25 +191,23 @@ export default function Home() {
                 padding: 16,
                 borderRadius: 12,
                 maxWidth: 650,
-                boxShadow: "0 4px 20px rgba(0,0,0,0.2)"
+                position: "relative"
               }}>
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: formatText(m.text)
-                  }}
-                />
+                <div dangerouslySetInnerHTML={{ __html: formatText(m.text) }} />
 
                 {!m.user && (
                   <button
                     onClick={() => navigator.clipboard.writeText(m.text)}
                     style={{
-                      marginTop: 10,
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
                       fontSize: 12,
                       opacity: 0.6,
-                      cursor: "pointer",
                       background: "none",
                       border: "none",
-                      color: "white"
+                      color: "white",
+                      cursor: "pointer"
                     }}>
                     Copy
                   </button>
@@ -200,6 +215,12 @@ export default function Home() {
               </div>
             </div>
           ))}
+
+          {loading && (
+            <div style={{ opacity: 0.6 }}>
+              Typing...
+            </div>
+          )}
         </div>
 
         {/* INPUT */}
