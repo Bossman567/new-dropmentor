@@ -24,7 +24,10 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    chatRef.current?.scrollTo(0, chatRef.current.scrollHeight);
+    chatRef.current?.scrollTo({
+      top: chatRef.current.scrollHeight,
+      behavior: "smooth"
+    });
   }, [current]);
 
   function save(data) {
@@ -105,30 +108,37 @@ export default function Home() {
 
   function formatText(text) {
     return text
-      .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>")
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
       .replace(/\n/g, "<br>");
   }
 
   return (
-    <div style={{ display: "flex", height: "100vh", background: "#0f172a", color: "white" }}>
+    <div style={{
+      display: "flex",
+      height: "100vh",
+      background: "radial-gradient(circle at top, #1e293b, #020617)",
+      color: "white"
+    }}>
 
       {/* SIDEBAR */}
       <div style={{
         width: 260,
-        background: "#020617",
+        backdropFilter: "blur(20px)",
+        background: "rgba(2,6,23,0.7)",
         padding: 20,
-        borderRight: "1px solid #1e293b"
+        borderRight: "1px solid rgba(255,255,255,0.05)"
       }}>
-        <h3 style={{ marginBottom: 20 }}>DropMentor</h3>
+        <h3 style={{ marginBottom: 20, opacity: 0.9 }}>DropMentor</h3>
 
         <button onClick={newChat} style={{
           width: "100%",
           padding: 12,
-          borderRadius: 8,
+          borderRadius: 10,
           background: "#22c55e",
           border: "none",
           color: "white",
-          cursor: "pointer"
+          cursor: "pointer",
+          fontWeight: 500
         }}>
           + New Chat
         </button>
@@ -139,8 +149,11 @@ export default function Home() {
               onClick={() => setCurrent(c)}
               style={{
                 padding: 10,
+                borderRadius: 8,
                 cursor: "pointer",
-                opacity: 0.7
+                marginBottom: 6,
+                opacity: 0.7,
+                background: "transparent"
               }}>
               {c.title}
             </div>
@@ -149,7 +162,11 @@ export default function Home() {
       </div>
 
       {/* MAIN */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <div style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column"
+      }}>
 
         {/* CHAT */}
         <div
@@ -159,38 +176,44 @@ export default function Home() {
             overflowY: "auto",
             display: "flex",
             justifyContent: "center",
-            padding: "30px 20px"
+            padding: "40px 20px"
           }}
         >
           <div style={{ width: "100%", maxWidth: 800 }}>
             {current?.messages.map((m, i) => (
-              <div
-                key={i}
+              <div key={i}
                 style={{
-                  marginBottom: 20,
+                  marginBottom: 24,
                   display: "flex",
                   justifyContent: m.user ? "flex-end" : "flex-start"
-                }}
-              >
+                }}>
                 <div style={{
-                  padding: "14px 16px",
-                  borderRadius: 12,
-                  background: m.user ? "#22c55e" : "#1e293b",
-                  maxWidth: "80%"
+                  padding: "16px 18px",
+                  borderRadius: 14,
+                  background: m.user
+                    ? "linear-gradient(135deg,#22c55e,#16a34a)"
+                    : "rgba(30,41,59,0.8)",
+                  backdropFilter: "blur(10px)",
+                  maxWidth: "75%",
+                  lineHeight: 1.6,
+                  fontSize: 15
                 }}>
                   <div dangerouslySetInnerHTML={{ __html: formatText(m.text) }} />
                 </div>
               </div>
             ))}
 
-            {loading && <div style={{ opacity: 0.6 }}>Thinking...</div>}
+            {loading && (
+              <div style={{ opacity: 0.6 }}>
+                Thinking...
+              </div>
+            )}
           </div>
         </div>
 
         {/* INPUT */}
         <div style={{
           padding: 20,
-          borderTop: "1px solid #1e293b",
           display: "flex",
           justifyContent: "center"
         }}>
@@ -199,9 +222,11 @@ export default function Home() {
             maxWidth: 800,
             display: "flex",
             gap: 10,
-            background: "#1e293b",
-            borderRadius: 14,
-            padding: 8
+            background: "rgba(30,41,59,0.8)",
+            backdropFilter: "blur(20px)",
+            borderRadius: 20,
+            padding: 10,
+            border: "1px solid rgba(255,255,255,0.05)"
           }}>
             <input
               value={input}
@@ -214,7 +239,8 @@ export default function Home() {
                 border: "none",
                 color: "white",
                 padding: 12,
-                outline: "none"
+                outline: "none",
+                fontSize: 15
               }}
             />
 
@@ -224,17 +250,15 @@ export default function Home() {
               <option value="pro">PRO</option>
             </select>
 
-            <button
-              onClick={send}
-              style={{
-                background: "#22c55e",
-                border: "none",
-                padding: "10px 16px",
-                borderRadius: 10,
-                color: "white",
-                cursor: "pointer"
-              }}
-            >
+            <button onClick={send} style={{
+              padding: "10px 18px",
+              borderRadius: 12,
+              background: "#22c55e",
+              border: "none",
+              color: "white",
+              cursor: "pointer",
+              fontWeight: 500
+            }}>
               Send
             </button>
           </div>
