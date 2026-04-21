@@ -84,38 +84,39 @@ export default function Home() {
     updateCurrent(finalChat);
   }
 
-  // 🔥 FIXED FORMATTER
+  // 🔥 FINAL TEXT FORMATTER
   function formatText(text) {
-    let lines = text.split("\n");
-    let result = [];
+    const lines = text.split("\n");
+    let html = "";
     let inList = false;
 
-    lines.forEach(line => {
-      // bold
+    for (let line of lines) {
+      // bold (**text**)
       line = line.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
 
-      // bullet (* või -)
+      // bullet list (* või -)
       if (line.startsWith("* ") || line.startsWith("- ")) {
         if (!inList) {
-          result.push("<ul>");
+          html += "<ul style='margin:10px 0; padding-left:20px;'>";
           inList = true;
         }
-        result.push("<li>" + line.substring(2) + "</li>");
+
+        html += "<li style='margin-bottom:6px;'>" + line.slice(2) + "</li>";
       } else {
         if (inList) {
-          result.push("</ul>");
+          html += "</ul>";
           inList = false;
         }
 
         if (line.trim() !== "") {
-          result.push("<p>" + line + "</p>");
+          html += "<p style='margin:8px 0;'>" + line + "</p>";
         }
       }
-    });
+    }
 
-    if (inList) result.push("</ul>");
+    if (inList) html += "</ul>";
 
-    return result.join("");
+    return html;
   }
 
   return (
