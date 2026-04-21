@@ -117,14 +117,15 @@ export default function Home() {
       display: "flex",
       height: "100vh",
       background: "radial-gradient(circle at top, #1e293b, #020617)",
-      color: "white"
+      color: "white",
+      fontFamily: "Inter, sans-serif"
     }}>
 
       {/* SIDEBAR */}
       <div style={{
         width: 260,
         backdropFilter: "blur(20px)",
-        background: "rgba(2,6,23,0.7)",
+        background: "rgba(2,6,23,0.6)",
         padding: 20,
         borderRight: "1px solid rgba(255,255,255,0.05)"
       }}>
@@ -133,12 +134,13 @@ export default function Home() {
         <button onClick={newChat} style={{
           width: "100%",
           padding: 12,
-          borderRadius: 10,
+          borderRadius: 12,
           background: "#22c55e",
           border: "none",
           color: "white",
           cursor: "pointer",
-          fontWeight: 500
+          fontWeight: 500,
+          transition: "0.2s"
         }}>
           + New Chat
         </button>
@@ -152,8 +154,8 @@ export default function Home() {
                 borderRadius: 8,
                 cursor: "pointer",
                 marginBottom: 6,
-                opacity: 0.7,
-                background: "transparent"
+                background: current?.id === c.id ? "rgba(255,255,255,0.08)" : "transparent",
+                transition: "0.2s"
               }}>
               {c.title}
             </div>
@@ -162,11 +164,7 @@ export default function Home() {
       </div>
 
       {/* MAIN */}
-      <div style={{
-        flex: 1,
-        display: "flex",
-        flexDirection: "column"
-      }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
 
         {/* CHAT */}
         <div
@@ -189,23 +187,45 @@ export default function Home() {
                 }}>
                 <div style={{
                   padding: "16px 18px",
-                  borderRadius: 14,
+                  borderRadius: 16,
                   background: m.user
                     ? "linear-gradient(135deg,#22c55e,#16a34a)"
-                    : "rgba(30,41,59,0.8)",
+                    : "rgba(30,41,59,0.7)",
                   backdropFilter: "blur(10px)",
                   maxWidth: "75%",
                   lineHeight: 1.6,
-                  fontSize: 15
+                  position: "relative"
                 }}>
                   <div dangerouslySetInnerHTML={{ __html: formatText(m.text) }} />
+
+                  {!m.user && (
+                    <button
+                      onClick={() => navigator.clipboard.writeText(m.text)}
+                      style={{
+                        position: "absolute",
+                        top: 8,
+                        right: 10,
+                        opacity: 0,
+                        transition: "0.2s",
+                        fontSize: 12,
+                        background: "none",
+                        border: "none",
+                        color: "white",
+                        cursor: "pointer"
+                      }}
+                      onMouseEnter={e => e.target.style.opacity = 1}
+                      onMouseLeave={e => e.target.style.opacity = 0}
+                    >
+                      Copy
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
 
             {loading && (
               <div style={{ opacity: 0.6 }}>
-                Thinking...
+                ● ● ●
               </div>
             )}
           </div>
@@ -222,7 +242,7 @@ export default function Home() {
             maxWidth: 800,
             display: "flex",
             gap: 10,
-            background: "rgba(30,41,59,0.8)",
+            background: "rgba(30,41,59,0.7)",
             backdropFilter: "blur(20px)",
             borderRadius: 20,
             padding: 10,
@@ -239,8 +259,7 @@ export default function Home() {
                 border: "none",
                 color: "white",
                 padding: 12,
-                outline: "none",
-                fontSize: 15
+                outline: "none"
               }}
             />
 
@@ -256,8 +275,7 @@ export default function Home() {
               background: "#22c55e",
               border: "none",
               color: "white",
-              cursor: "pointer",
-              fontWeight: 500
+              cursor: "pointer"
             }}>
               Send
             </button>
