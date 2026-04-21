@@ -40,6 +40,12 @@ export default function Home() {
     setCurrent(chat);
   }
 
+  function updateCurrent(chat) {
+    const updated = chats.map(c => c.id === chat.id ? chat : c);
+    save(updated);
+    setCurrent(chat);
+  }
+
   async function send() {
     if (!input || !current) return;
 
@@ -78,10 +84,38 @@ export default function Home() {
     updateCurrent(finalChat);
   }
 
-  function updateCurrent(chat) {
-    const updated = chats.map(c => c.id === chat.id ? chat : c);
-    save(updated);
-    setCurrent(chat);
+  // 🔥 FIXED FORMATTER
+  function formatText(text) {
+    let lines = text.split("\n");
+    let result = [];
+    let inList = false;
+
+    lines.forEach(line => {
+      // bold
+      line = line.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+
+      // bullet (* või -)
+      if (line.startsWith("* ") || line.startsWith("- ")) {
+        if (!inList) {
+          result.push("<ul>");
+          inList = true;
+        }
+        result.push("<li>" + line.substring(2) + "</li>");
+      } else {
+        if (inList) {
+          result.push("</ul>");
+          inList = false;
+        }
+
+        if (line.trim() !== "") {
+          result.push("<p>" + line + "</p>");
+        }
+      }
+    });
+
+    if (inList) result.push("</ul>");
+
+    return result.join("");
   }
 
   return (
@@ -120,10 +154,13 @@ export default function Home() {
                 background: m.user ? "#22c55e" : "#1e293b",
                 padding: 12,
                 borderRadius: 10,
-                maxWidth: 600,
-                whiteSpace: "pre-wrap"
+                maxWidth: 600
               }}>
-                {m.text}
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: formatText(m.text)
+                  }}
+                />
               </div>
             </div>
           ))}
