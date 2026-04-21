@@ -12,21 +12,23 @@ export async function POST(req) {
     if (tier === "pro") {
       systemPrompt = `
 You are an elite dropshipping expert.
-Give very detailed answers, step-by-step strategies, tools, ad ideas, and examples.
+Give very detailed answers with step-by-step strategies, tools, examples, pricing, and ad ideas.
 `;
-    } else if (tier === "starter") {
+    } 
+    else if (tier === "starter") {
       systemPrompt = `
 You are a helpful dropshipping coach.
-Give medium detailed answers with steps and examples.
+Give medium detailed answers with steps, tools and simple examples.
 `;
-    } else {
+    } 
+    else {
       systemPrompt = `
 You are a beginner-friendly dropshipping assistant.
-Give simple explanations and basic steps.
+Give simple explanations, tips and basic steps.
 `;
     }
 
-    // 🔥 API call
+    // 🔥 OpenAI call
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -44,18 +46,30 @@ Give simple explanations and basic steps.
 
     const data = await response.json();
 
-    // 🔍 DEBUG (näitab päris errorit kui midagi valesti)
+    // 🔍 kui API error
     if (!response.ok) {
       return Response.json({
         reply: "ERROR:\n" + JSON.stringify(data, null, 2)
       });
     }
 
-    // ✅ normaalne vastus
+    // ✨ tekst puhastamine
+    function cleanText(text) {
+      return text
+        // eemalda * ja -
+        .replace(/^\s*[\*\-]\s+/gm, "")
+        // eemalda liigsed tühjad read
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+    }
+
+    const rawReply =
+      data.choices?.[0]?.message?.content || "No response";
+
+    const cleanedReply = cleanText(rawReply);
+
     return Response.json({
-      reply:
-        data.choices?.[0]?.message?.content ||
-        "No response from AI"
+      reply: cleanedReply
     });
 
   } catch (err) {
